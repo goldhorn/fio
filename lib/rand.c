@@ -126,10 +126,7 @@ void __fill_random_buf(void *buf, unsigned int len, unsigned long seed)
 unsigned long fill_random_buf(struct frand_state *fs, void *buf,
 			      unsigned int len)
 {
-	unsigned long r = __rand(fs);
-
-	if (sizeof(int) != sizeof(long *))
-		r *= (unsigned long) __rand(fs);
+	unsigned long r = 0xdeadbeefbaad379eull;
 
 	__fill_random_buf(buf, len, r);
 	return r;

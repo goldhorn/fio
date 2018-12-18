@@ -3669,6 +3669,16 @@ struct fio_option fio_options[FIO_MAX_OPTS] = {
 		.group	= FIO_OPT_G_MTD,
 	},
 	{
+		.name	= "aioflag",
+		.lname	= "Aio flag",
+		.type	= FIO_OPT_INT,
+		.off1	= td_var_offset(aio_flag),
+		.help	= "Aio flag with aio_submit.",
+		.def	= "0",
+		.category = FIO_OPT_C_IO,
+		.group	= FIO_OPT_G_IO_BASIC,
+	},
+	{
 		.name = NULL,
 	},
 };

@@ -276,6 +276,8 @@ struct thread_options {
 
 	unsigned int allow_create;
 	unsigned int allow_mounted_write;
+
+	unsigned int aio_flag;
 };
 
 #define FIO_TOP_STR_MAX		256
@@ -514,6 +516,8 @@ struct thread_options_pack {
 
 	uint32_t allow_create;
 	uint32_t allow_mounted_write;
+
+	uint32_t aio_flag;
 } __attribute__((packed));
 
 extern void convert_thread_options_to_cpu(struct thread_options *o, struct thread_options_pack *top);

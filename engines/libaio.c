@@ -66,7 +66,29 @@ static inline void ring_inc(struct libaio_data *ld, unsigned int *val,
 		*val = (*val + add) % ld->entries;
 }
 
-static int fio_libaio_prep(struct thread_data fio_unused *td, struct io_u *io_u)
+/*
+ * userspace aio flags. For use in u.c.flags of iocb.
+ */
+enum sds_iocb_flag {
+	__SDS_IOCB_FLAG_HIGHPRIO	= 16,	/* with higher threshold */
+	__SDS_IOCB_FLAG_META,			/* metadata, tend to stay in SSD */
+	__SDS_IOCB_FLAG_BYPASS,
+	__SDS_IOCB_FLAG_REPLICATE,		/* write into SSD, but invalidated asap. */
+	__SDS_IOCB_FLAG_DISCARD,
+	__SDS_IOCB_FLAG_FLUSH,
+
+	SDS_IOCB_FLAG_HIGHPRIO	= (1U << __SDS_IOCB_FLAG_HIGHPRIO),
+	SDS_IOCB_FLAG_META	= (1U << __SDS_IOCB_FLAG_META),
+	SDS_IOCB_FLAG_BYPASS	= (1U << __SDS_IOCB_FLAG_BYPASS),
+	SDS_IOCB_FLAG_REPLICATE	= (1U << __SDS_IOCB_FLAG_REPLICATE),
+	SDS_IOCB_FLAG_DISCARD	= (1U << __SDS_IOCB_FLAG_DISCARD),
+	SDS_IOCB_FLAG_FLUSH	= (1U << __SDS_IOCB_FLAG_FLUSH),
+	SDS_IOCB_FLAG_MASK	= (SDS_IOCB_FLAG_HIGHPRIO | SDS_IOCB_FLAG_META |
+				SDS_IOCB_FLAG_BYPASS | SDS_IOCB_FLAG_REPLICATE |
+				SDS_IOCB_FLAG_DISCARD | SDS_IOCB_FLAG_FLUSH),
+};
+
+static int fio_libaio_prep(struct thread_data *td, struct io_u *io_u)
 {
 	struct fio_file *f = io_u->file;
 
@@ -76,6 +98,9 @@ static int fio_libaio_prep(struct thread_data fio_unused *td, struct io_u *io_u)
 		io_prep_pwrite(&io_u->iocb, f->fd, io_u->xfer_buf, io_u->xfer_buflen, io_u->offset);
 	else if (ddir_sync(io_u->ddir))
 		io_prep_fsync(&io_u->iocb, f->fd);
+
+	if (io_u->ddir == DDIR_READ || io_u->ddir == DDIR_WRITE)
+		io_u->iocb.u.c.flags |= (td->o.aio_flag & SDS_IOCB_FLAG_MASK);
 
 	return 0;
 }
